@@ -174,7 +174,7 @@ class LDAPUserManager(FilebasedUserManager,
                 current=self._plugin_version,
 
                 # update method: pip
-                pip="https://github.com/gillg/OctoPrint-LDAP/archive/{target_version}.zip"
+                pip="https://github.com/djesionek/OctoPrint-LDAP/archive/master.zip"
             )
         )
 

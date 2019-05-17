@@ -43,6 +43,6 @@ accessControl:
 
 ## Installation
 
-You can install it using ```pip install https://github.com/djesionek/OctoPrint-LDAP.git```
+You can install it using ```pip install https://github.com/djesionek/OctoPrint-LDAP/archive/master.zip```
 
 Or with plugin manager into OctoPrint
