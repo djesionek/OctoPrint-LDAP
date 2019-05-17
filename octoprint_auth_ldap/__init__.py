@@ -77,9 +77,16 @@ class LDAPUserManager(FilebasedUserManager,
         try:
             connection = self.getLDAPClient()
 
+            ldap_binddn = settings().get(["accessControl", "ldap_binddn"])
+            ldap_password = settings().get(["accessControl", "ldap_password"])
+            ldap_username_attr = settings().get(["accessControl", "ldap_username_attr"])
+
+            connection.simple_bind_s(ldap_binddn,ldap_password)
+
             #verify user)
-            result = connection.search_s(ldap_search_base, ldap.SCOPE_SUBTREE, "uid=" + userid)
+            result = connection.search_s(ldap_search_base, ldap.SCOPE_SUBTREE, ldap_username_attr +"=" + userid)
             if result is None or len(result) == 0:
+                self._logger.error("LDAP-AUTH: User not found!")
                 return None
             self._logger.error("LDAP-AUTH: User found!")
 
@@ -96,7 +103,7 @@ class LDAPUserManager(FilebasedUserManager,
                 else:
                     group_filter = "(cn=%s)" % groups
 
-                query = "(&(objectClass=posixGroup)%s(memberUid=%s))" % (group_filter, userid)
+                query = "(&(objectClass=groupOfUniqueNames)%s(uniqueMember=%s))" % (group_filter, userid)
                 self._logger.error("LDAP-AUTH QUERY:" + query)
                 group_result = connection.search_s(ldap_search_base, ldap.SCOPE_SUBTREE, query)
 
@@ -140,15 +147,15 @@ class LDAPUserManager(FilebasedUserManager,
             Exception("LDAP conf error, server is missing")
 
         connection = ldap.initialize(ldap_server)
-        if (ldap_server.startswith('ldaps://')):
-            verifypeer = ldap.OPT_X_TLS_NEVER
-            if ldap_verifypeer == 'demand':
-                verifypeer = ldap.OPT_X_TLS_DEMAND
-            connection.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, verifypeer)
-            try:
-                connection.start_tls_s()
-            except:
-                pass
+        #if (ldap_server.startswith('ldaps://')):
+        #    verifypeer = ldap.OPT_X_TLS_NEVER
+        #    if ldap_verifypeer == 'demand':
+        #        verifypeer = ldap.OPT_X_TLS_DEMAND
+        #    connection.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, verifypeer)
+        #    try:
+        #        connection.start_tls_s()
+        #    except:
+        #        pass
 
         return connection
 
@@ -184,6 +191,9 @@ class LDAPUserManager(FilebasedUserManager,
                 ldap_uri=None,
                 ldap_tls_reqcert='demand',
                 ldap_search_base=None,
+                ldap_binddn=None,
+                ldap_password=None,
+                ldap_username_attr='uid',
                 groups=None
             )
         )
